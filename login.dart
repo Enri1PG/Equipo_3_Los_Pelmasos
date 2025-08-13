@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto_videoteca/singup.dart';
 import 'package:proyecto_videoteca/tabla.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+
 
 class TextfieldGeneral extends StatelessWidget {
   final String labelText;
@@ -61,6 +64,8 @@ class _LoginPageState extends State<LoginPage> {
   String _nombre = '';
   String _correo = '';
   String _contrasena = '';
+  String _usuario = '';
+  String _telefono = '';
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(height: 7),
 
                 SizedBox(height: 7),
+               
                 _textfieldPassword(),
                 SizedBox(height: 7),
 
@@ -119,9 +125,6 @@ class _LoginPageState extends State<LoginPage> {
                 _buttonLogin(context),
                 SizedBox(height: 20),
 
-          
-
-             
               ],
             ),
           ),
@@ -165,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buttonSingUp(BuildContext context) {
+Widget _buttonSingUp(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
         Navigator.pushReplacement(
@@ -186,24 +189,30 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buttonLogin (BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
+      onPressed: () async {
         if (_formKey.currentState!.validate()) {
-    
-          if (_correo == 'admin@upjr.edu.mx' &&
-              _contrasena == '12345678') {
+          try {
+            // Guardar datos en la colección 'Usuarios'
+            await FirebaseFirestore.instance.collection('Usuarios').add({
+              'nombre': _nombre,
+              'usuario': _usuario,
+              'correo': _correo,
+              'contrasena': _contrasena,
+              'telefono': _telefono,
+              'fechaRegistro': FieldValue.serverTimestamp(), // opcional
+            });
+
+            // Navegar a la tabla
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => TablaInfoPage()),
             );
-          } 
-          else
-           { 
+          } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Correo o contraseña incorrectos')),
+              SnackBar(content: Text('Error al registrarse: $e')),
             );
           }
-        } 
-        else {
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Completa todos los campos correctamente')),
           );
